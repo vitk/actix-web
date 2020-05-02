@@ -1,5 +1,4 @@
 //! Error and Result module
-use std::any::TypeId;
 use std::cell::RefCell;
 use std::io::Write;
 use std::str::Utf8Error;
@@ -15,12 +14,11 @@ use derive_more::{Display, From};
 pub use futures_channel::oneshot::Canceled;
 use http::uri::InvalidUri;
 use http::{header, Error as HttpError, StatusCode};
-use httparse;
 use serde::de::value::Error as DeError;
 use serde_json::error::Error as JsonError;
 use serde_urlencoded::ser::Error as FormError;
 
-// re-export for convinience
+// re-export for convenience
 use crate::body::Body;
 pub use crate::cookie::ParseError as CookieParseError;
 use crate::helpers::Writer;
@@ -36,7 +34,7 @@ pub type Result<T, E = Error> = result::Result<T, E>;
 
 /// General purpose actix web error.
 ///
-/// An actix web error is used to carry errors from `failure` or `std::error`
+/// An actix web error is used to carry errors from `std::error`
 /// through actix in a convenient way.  It can be created through
 /// converting errors with `into()`.
 ///
@@ -83,25 +81,10 @@ pub trait ResponseError: fmt::Debug + fmt::Display {
         resp.set_body(Body::from(buf))
     }
 
-    #[doc(hidden)]
-    fn __private_get_type_id__(&self) -> TypeId
-    where
-        Self: 'static,
-    {
-        TypeId::of::<Self>()
-    }
+    downcast_get_type_id!();
 }
 
-impl dyn ResponseError + 'static {
-    /// Downcasts a response error to a specific type.
-    pub fn downcast_ref<T: ResponseError + 'static>(&self) -> Option<&T> {
-        if self.__private_get_type_id__() == TypeId::of::<T>() {
-            unsafe { Some(&*(self as *const dyn ResponseError as *const T)) }
-        } else {
-            None
-        }
-    }
-}
+downcast!(ResponseError);
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -350,6 +333,8 @@ pub enum PayloadError {
     Io(io::Error),
 }
 
+impl std::error::Error for PayloadError {}
+
 impl From<h2::Error> for PayloadError {
     fn from(err: h2::Error) -> Self {
         PayloadError::Http2Payload(err)
@@ -447,7 +432,7 @@ pub enum DispatchError {
     Unknown,
 }
 
-/// A set of error that can occure during parsing content type
+/// A set of error that can occur during parsing content type
 #[derive(PartialEq, Debug, Display)]
 pub enum ContentTypeError {
     /// Can not parse content type
@@ -457,6 +442,8 @@ pub enum ContentTypeError {
     #[display(fmt = "Unknown content encoding")]
     UnknownEncoding,
 }
+
+impl std::error::Error for ContentTypeError {}
 
 /// Return `BadRequest` for `ContentTypeError`
 impl ResponseError for ContentTypeError {
@@ -963,9 +950,15 @@ where
     InternalError::new(err, StatusCode::NETWORK_AUTHENTICATION_REQUIRED).into()
 }
 
-#[cfg(feature = "failure")]
-/// Compatibility for `failure::Error`
-impl ResponseError for fail_ure::Error {}
+#[cfg(feature = "actors")]
+/// `InternalServerError` for `actix::MailboxError`
+/// This is supported on feature=`actors` only
+impl ResponseError for actix::MailboxError {}
+
+#[cfg(feature = "actors")]
+/// `InternalServerError` for `actix::ResolverError`
+/// This is supported on feature=`actors` only
+impl ResponseError for actix::actors::resolver::ResolverError {}
 
 #[cfg(test)]
 mod tests {

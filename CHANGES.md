@@ -1,10 +1,32 @@
 # Changes
 
-## [2.0.NEXT] - 2020-01-xx
+## [Unreleased]
 
 ### Changed
 
-*  Use `sha-1` crate instead of unmaintained `sha1` crate
+* `{Resource,Scope}::default_service(f)` handlers now support app data extraction. [#1452]
+* Implement `std::error::Error` for our custom errors [#1422]
+* NormalizePath middleware now appends trailing / so that routes of form /example/ respond to /example requests.
+
+[#1422]: https://github.com/actix/actix-web/pull/1422
+[#1452]: https://github.com/actix/actix-web/pull/1452
+
+## [3.0.0-alpha.1] - 2020-03-11
+
+### Added
+
+* Add helper function for creating routes with `TRACE` method guard `web::trace()`
+* Add convenience functions `test::read_body_json()` and `test::TestRequest::send_request()` for testing.
+
+### Changed
+
+* Use `sha-1` crate instead of unmaintained `sha1` crate
+* Skip empty chunks when returning response from a `Stream` [#1308]
+* Update the `time` dependency to 0.2.7
+* Update `actix-tls` dependency to 2.0.0-alpha.1
+* Update `rustls` dependency to 0.17
+
+[#1308]: https://github.com/actix/actix-web/pull/1308
 
 ## [2.0.0] - 2019-12-25
 

@@ -11,6 +11,7 @@ use futures::future::ok;
 use open_ssl::ssl::{SslAcceptor, SslFiletype, SslMethod, SslVerifyMode};
 use rust_tls::ClientConfig;
 
+#[allow(unused)]
 fn ssl_acceptor() -> SslAcceptor {
     // load ssl keys
     let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
@@ -71,7 +72,8 @@ async fn _test_connection_reuse_h2() {
                 .openssl(ssl_acceptor())
                 .map_err(|_| ()),
         )
-    });
+    })
+    .await;
 
     // disable ssl verification
     let mut config = ClientConfig::new();

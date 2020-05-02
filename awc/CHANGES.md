@@ -1,9 +1,23 @@
 # Changes
 
+## [Unreleased]
+
+### Changed
+
+* Implement `std::error::Error` for our custom errors [#1422]
+
+[#1422]: https://github.com/actix/actix-web/pull/1422
+
+## [2.0.0-alpha.1] - 2020-03-11
+
+* Update `actix-http` dependency to 2.0.0-alpha.2
+* Update `rustls` dependency to 0.17
+* ClientBuilder accepts initial_window_size and initial_connection_window_size HTTP2 configuration
+* ClientBuilder allowing to set max_http_version to limit HTTP version to be used
+
 ## [1.0.1] - 2019-12-15
 
 * Fix compilation with default features off
-
 
 ## [1.0.0] - 2019-12-13
 
